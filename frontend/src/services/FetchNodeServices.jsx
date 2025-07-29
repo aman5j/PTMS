@@ -1,6 +1,7 @@
 import axios from "axios";
+// import.meta.env;
 
-var serverURL='http://localhost:3000';
+var serverURL=import.meta.env.VITE_BASE_URL;
 
 const getData = async(url) => {
     try {
