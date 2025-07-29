@@ -1,0 +1,385 @@
+import * as React from "react";
+import { useState } from "react";
+import { postData } from "../services/FetchNodeServices";
+import {
+  Box,
+  Grid,
+  Paper,
+  TextField,
+  Button,
+  Typography,
+  Snackbar,
+  IconButton,
+  InputAdornment,
+  Fade,
+} from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import Visibility from "@mui/icons-material/Visibility";
+import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useNavigate } from "react-router-dom";
+
+export default function Signup() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [cpassword, setCpassword] = useState("");
+  const [errors, setErrors] = useState({});
+  const [open, setOpen] = useState(false);
+  const [msg, setMsg] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleGoToLogin = () => navigate("/");
+
+  const handleClickShowPassword = () => setShowPassword((show) => !show);
+  const handleMouseDownPassword = (event) => event.preventDefault();
+
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") return;
+    setOpen(false);
+  };
+
+  const action = (
+    <React.Fragment>
+      <Button color="secondary" size="small" onClick={handleClose}>
+        UNDO
+      </Button>
+      <IconButton
+        size="small"
+        aria-label="close"
+        color="inherit"
+        onClick={handleClose}
+      >
+        <CloseIcon fontSize="small" />
+      </IconButton>
+    </React.Fragment>
+  );
+
+  // Validation Helpers
+  const validate = () => {
+    let temp = {};
+    temp.name = name.length >= 3 ? "" : "Name must be at least 3 characters.";
+    temp.email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      ? ""
+      : "Email is not valid.";
+    temp.password =
+      password.length >= 8 && /[!@#$%^&*(),.?":{}|<>]/.test(password)
+        ? ""
+        : "Password must be at least 8 characters and contain a special character.";
+    temp.cpassword = cpassword === password ? "" : "Passwords do not match.";
+    setErrors(temp);
+    return Object.values(temp).every((x) => x === "");
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!validate()) {
+      setMsg("Please fix the validation errors.");
+      setOpen(true);
+      return;
+    }
+    try {
+      var result = await postData("login/signup_submit", {
+        name,
+        email,
+        password,
+        cpassword,
+      });
+      setMsg(result.message);
+      // setOpen(true);
+      if (result.status) {
+        setTimeout(() => {
+          navigate("/");
+        }, 1500);
+      }
+    } catch (e) {
+      setMsg("Signup failed. Try again.");
+      // setOpen(true);
+    }
+  };
+
+  return (
+    <div
+      style={{
+        minHeight: "100vh",
+        width: "100vw",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        // background: "linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)",
+        transition: "background 0.5s",
+      }}
+    >
+      <Box sx={{ flexGrow: 1, maxWidth: 900 }}>
+        <Grid container spacing={4} alignItems="center">
+          <Grid
+            size={6}
+            item
+            xs={12}
+            md={7}
+            sx={{ display: { xs: "none", md: "block" } }}
+          >
+            <img
+              src="PTMS.4c26187d35972022d20073001028e5b1.svg"
+              style={{ width: "60%", marginBottom: 24 }}
+              alt="Property Tax Management System"
+            />
+            <Typography variant="h4" color="#800080" gutterBottom>
+              Property Tax Management System
+            </Typography>
+            <Typography variant="h6" color="text.secondary">
+              Gurgaon
+            </Typography>
+          </Grid>
+          <Grid size={6} item xs={12} md={5}>
+            <Fade in={true} timeout={900}>
+              <Paper
+                elevation={4}
+                sx={{
+                  p: { xs: 3, sm: 5 },
+                  borderRadius: 3,
+                  maxWidth: 480,
+                  width: "100%",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.10)",
+                  background: "rgba(255,255,255,0.92)",
+                  backdropFilter: "blur(4px)",
+                }}
+              >
+                {/* <Box display="flex" justifyContent="center" mb={2}>
+                  <img
+                    src="logo1.svg"
+                    style={{ height: 60, marginRight: 16 }}
+                    alt="Logo 1"
+                  />
+                  <img src="logo2.png" style={{ height: 60 }} alt="Logo 2" />
+                </Box> */}
+                <Typography
+                  variant="h5"
+                  align="center"
+                  gutterBottom
+                  sx={{ fontWeight: 700 }}
+                >
+                  Create Account
+                </Typography>
+                <Typography
+                  variant="subtitle1"
+                  align="center"
+                  color="text.secondary"
+                  sx={{ mb: 2 }}
+                >
+                  Sign up to get started!
+                </Typography>
+                <form onSubmit={handleSubmit} noValidate>
+                  <Grid container spacing={2}>
+                    <Grid size={6} item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        margin="normal"
+                        id="name"
+                        label="Name"
+                        variant="outlined"
+                        size="small"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        error={!!errors.name}
+                        helperText={errors.name}
+                        sx={{
+                          "& .MuiOutlinedInput-root.Mui-focused": {
+                            "& > fieldset": {
+                              borderColor: "#800080",
+                            },
+                          },
+                          "& .MuiInputLabel-root.Mui-focused": {
+                            color: "#800080",
+                          },
+                        }}
+                        // sx={{ background: "#f7faff", borderRadius: 2 }}
+                      />
+                    </Grid>
+                    <Grid size={6} item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        margin="normal"
+                        id="email"
+                        label="Email"
+                        variant="outlined"
+                        size="small"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                        sx={{
+                          "& .MuiOutlinedInput-root.Mui-focused": {
+                            "& > fieldset": {
+                              borderColor: "#800080",
+                            },
+                          },
+                          "& .MuiInputLabel-root.Mui-focused": {
+                            color: "#800080",
+                          },
+                        }}
+                        // sx={{ background: "#f7faff", borderRadius: 2 }}
+                      />
+                    </Grid>
+                    <Grid size={6} item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        margin="normal"
+                        id="password"
+                        label="Password"
+                        variant="outlined"
+                        size="small"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        error={!!errors.password}
+                        helperText={errors.password}
+                        type={showPassword ? "text" : "password"}
+                        sx={{
+                          "& .MuiOutlinedInput-root.Mui-focused": {
+                            "& > fieldset": {
+                              borderColor: "#800080",
+                            },
+                          },
+                          "& .MuiInputLabel-root.Mui-focused": {
+                            color: "#800080",
+                          },
+                        }}
+                        // sx={{ background: "#f7faff", borderRadius: 2 }}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                aria-label={
+                                  showPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                                }
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end"
+                              >
+                                {showPassword ? (
+                                  <VisibilityOff />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={6} item xs={12} sm={6}>
+                      <TextField
+                        fullWidth
+                        margin="normal"
+                        id="cpassword"
+                        label="Confirm Password"
+                        variant="outlined"
+                        size="small"
+                        value={cpassword}
+                        onChange={(e) => setCpassword(e.target.value)}
+                        error={!!errors.cpassword}
+                        helperText={errors.cpassword}
+                        type={showPassword ? "text" : "password"}
+                        sx={{
+                          "& .MuiOutlinedInput-root.Mui-focused": {
+                            "& > fieldset": {
+                              borderColor: "#800080",
+                            },
+                          },
+                          "& .MuiInputLabel-root.Mui-focused": {
+                            color: "#800080",
+                          },
+                        }}
+                        // sx={{ background: "#f7faff", borderRadius: 2 }}
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                aria-label={
+                                  showPassword
+                                    ? "Hide password"
+                                    : "Show password"
+                                }
+                                onClick={handleClickShowPassword}
+                                onMouseDown={handleMouseDownPassword}
+                                edge="end"
+                              >
+                                {showPassword ? (
+                                  <VisibilityOff />
+                                ) : (
+                                  <Visibility />
+                                )}
+                              </IconButton>
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    </Grid>
+                    <Grid size={12} item xs={12}>
+                      <Button
+                        fullWidth
+                        sx={{
+                          borderRadius: 3,
+                          mt: 2,
+                          py: 1.3,
+                          fontWeight: 600,
+                          fontSize: "1.1rem",
+                          background:
+                            "linear-gradient(90deg, #800080 0%, #a020f0 100%)",
+                          color: "#fff",
+                          boxShadow: "0 2px 8px rgba(128, 0, 128, 0.3)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(90deg, #a020f0 0%, #800080 100%)",
+                          },
+                        }}
+                        type="submit"
+                        variant="contained"
+                      >
+                        Sign Up
+                      </Button>
+                      <Box mt={2} textAlign="center">
+                        <Typography variant="body2" color="text.secondary">
+                          Already have an account?{" "}
+                          <Button
+                            variant="text"
+                            color="primary"
+                            sx={{
+                              textTransform: "none",
+                              fontWeight: 700,
+                              padding: 0,
+                              minWidth: 0,
+                              fontSize: "1rem",
+                              color: "#800080",
+                            }}
+                            onClick={handleGoToLogin}
+                          >
+                            Login
+                          </Button>
+                        </Typography>
+                      </Box>
+                      <Snackbar
+                        open={open}
+                        autoHideDuration={4000}
+                        onClose={handleClose}
+                        message={msg}
+                        action={action}
+                        anchorOrigin={{
+                          vertical: "bottom",
+                          horizontal: "center",
+                        }}
+                      />
+                    </Grid>
+                  </Grid>
+                </form>
+              </Paper>
+            </Fade>
+          </Grid>
+        </Grid>
+      </Box>
+    </div>
+  );
+}

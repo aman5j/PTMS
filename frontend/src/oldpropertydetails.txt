@@ -1,0 +1,160 @@
+import React from "react";
+import {
+  Grid,
+  Box,
+  Typography,
+  TextField,
+  InputLabel,
+  FormControl,
+  Select,
+  MenuItem,
+  Card,
+  CardContent,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import OwnerDetails from "./OwnerDetails";
+
+const useStyles = makeStyles({
+  ownerheading: {
+    width: "100%",
+    height: "100%",
+    display: "flex",
+    justifyContent: "center",
+    background: "#f5f5f5",
+  },
+});
+
+export default function PropertyDetails() {
+  const classes = useStyles();
+  const [zone, setZone] = React.useState("");
+  const [ward, setWard] = React.useState("");
+  const [mohalla, setMohalla] = React.useState("");
+
+  const zoneWardMapping = {
+    zone1: ["ward1", "ward2", "ward3"],
+    zone2: ["ward4", "ward5", "ward6"],
+    zone3: ["ward7", "ward8", "ward9"],
+  };
+
+  const wardMohallaMapping = {
+    ward1: ["mohalla1", "mohalla2", "mohalla3"],
+    ward2: ["mohalla14", "mohalla5", "mohalla6"],
+    ward3: ["mohalla7", "mohalla8", "mohalla9"],
+    ward4: ["mohalla10", "mohalla11", "mohalla12"],
+    ward5: ["mohalla13", "mohalla14", "mohalla15"],
+    ward6: ["mohalla16", "mohalla17", "mohalla18"],
+    ward7: ["mohalla19", "mohalla20", "mohalla21"],
+    ward8: ["mohalla22", "mohalla23", "mohalla24"],
+    ward9: ["mohalla25", "mohalla26", "mohalla27"],
+  };
+
+  const handleZone = (event) => {
+    setZone(event.target.value);
+    setWard("");
+  };
+
+  const handleWard = (event) => {
+    setWard(event.target.value);
+    setMohalla("");
+  };
+
+  const handleMohalla = (event) => {
+    setMohalla(event.target.value);
+  };
+
+  const wardOptions = zone ? zoneWardMapping[zone] : [];
+  const mohallaOptions = ward ? wardMohallaMapping[ward] : [];
+
+  return (
+    <div
+    // style={{
+    //     minHeight: "100vh",
+    //     display: "flex",
+    //     alignItems: "center",
+    //     justifyContent: "center",
+    //     // background: "linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%)",
+    // }}
+    >
+      <Box sx={{ flexGrow: 1, maxWidth: 900 }}>
+        <Grid container spacing={4} alignItems="center">
+            {/* Reusable OwnerDetails Component */}
+            <OwnerDetails />
+
+
+          <Grid size={12}>
+            {/* Add more main content here */}
+            <Typography align="center" color="textSecondary">
+              <strong>Property Details</strong>
+            </Typography>
+          </Grid>
+
+          <Grid size={4}>
+            <FormControl fullWidth>
+              <InputLabel id="zone">Zone</InputLabel>
+              <Select
+                size="small"
+                labelId="zone"
+                id="zone"
+                value={zone}
+                label="Zone"
+                onChange={handleZone}
+              >
+                <MenuItem value="zone1">Zone1</MenuItem>
+                <MenuItem value="zone2">Zone2</MenuItem>
+                <MenuItem value="zone3">Zone3</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid size={4}>
+            <FormControl fullWidth>
+              <InputLabel id="ward">Ward</InputLabel>
+              <Select
+                size="small"
+                labelId="ward"
+                id="ward"
+                value={ward}
+                label="Ward"
+                onChange={handleWard}
+                disabled={!zone}
+              >
+                {wardOptions.map((wardValue) => (
+                  <MenuItem key={wardValue} value={wardValue}>
+                    {wardValue.charAt(0).toUpperCase() + wardValue.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid size={4}>
+            <FormControl fullWidth>
+              <InputLabel id="mohalla">Mohalla</InputLabel>
+              <Select
+                size="small"
+                labelId="mohalla"
+                id="mohalla"
+                value={mohalla}
+                label="mohalla"
+                onChange={handleMohalla}
+                disabled={!ward}
+              >
+                {mohallaOptions.map((mohallaValue) => (
+                  <MenuItem key={mohallaValue} value={mohallaValue}>
+                    {mohallaValue.charAt(0).toUpperCase() + mohallaValue.slice(1)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+        </Grid>
+      </Box>
+    </div>
+  );
+}

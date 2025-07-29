@@ -1,0 +1,238 @@
+import React from "react";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  Typography,
+  Box,
+  Button,
+  Tooltip,
+  Chip,
+} from "@mui/material";
+import DownloadIcon from "@mui/icons-material/Download";
+import { serverURL } from "../services/FetchNodeServices"; // change as needed
+
+const columns = [
+  { id: "sno", label: "S.No.", minWidth: 40, align: "center" },
+  { id: "ownerName", label: "Owner", minWidth: 120 },
+  { id: "mobileNo", label: "Mobile", minWidth: 110 },
+  { id: "email", label: "Email", minWidth: 150 },
+  { id: "propertyAddress", label: "Address", minWidth: 130 },
+  { id: "zone", label: "Zone", minWidth: 70 },
+  { id: "ward", label: "Ward", minWidth: 70 },
+  { id: "mohalla", label: "Mohalla", minWidth: 90 },
+  { id: "houseUsage", label: "Usage", minWidth: 85 },
+  { id: "ownershipStatus", label: "Ownership", minWidth: 95 },
+  { id: "constructionYear", label: "Construction Year", minWidth: 70, align: "center" },
+  { id: "sewerConnection", label: "Sewer Conn.", minWidth: 65, align: "center" },
+  { id: "isDisabled", label: "Is Disabled", minWidth: 70, align: "center" },
+  { id: "frontView", label: "Front", minWidth: 70, align: "center" },
+];
+
+function capitalizeWords(str) {
+  if (!str) return "-";
+  return str.replace(/\w\S*/g, (txt) =>
+    txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+  );
+}
+
+
+
+
+const getRowStyle = (index) =>
+  index % 2 === 0
+    ? { backgroundColor: "#f9f9f9" }
+    : { backgroundColor: "#fff" };
+
+const renderCell = (property, col, idx) => {
+  if (col.id === "sno") return idx + 1;
+  if (col.id === "sewerConnection" || col.id === "isDisabled")
+    return (
+      <Chip
+        label={property[col.id] ? "Yes" : "No"}
+        color={property[col.id] ? "success" : "default"}
+        size="small"
+      />
+    );
+  if (col.id === "frontView")
+    return property[col.id] ? (
+      <a href={`${serverURL}/images/${property[col.id]}`} target="_blank" rel="noopener noreferrer">
+        <img
+          src={`${serverURL}/images/${property[col.id]}`}
+          alt={col.label}
+          style={{ width: 48, height: 32, objectFit: "cover" }}
+          loading="lazy"
+        />
+      </a>
+    ) : (
+      "-"
+    );
+  if (
+    col.id === "email" ||
+    col.id === "ownerName" ||
+    col.id === "propertyAddress"
+  )
+    return (
+      <Tooltip title={property[col.id] || ""}>
+        <span style={{ maxWidth: 130, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "inline-block" }}>
+          {property[col.id] || "-"}
+        </span>
+      </Tooltip>
+    );
+
+  // Capitalize these columns:
+  if (
+    col.id === "zone" ||
+    col.id === "ward" ||
+    col.id === "mohalla" ||
+    col.id === "houseUsage" ||
+    col.id === "ownershipStatus" ||
+    col.id === "ownerName"    // <-- add owner here!
+  ) {
+    return capitalizeWords(property[col.id]);
+  }
+
+  if (col.id === "constructionYear" && property[col.id]) {
+    return (
+      <span style={{ display: "block", textAlign: "center" }}>
+        {property[col.id]}
+      </span>
+    );
+  }
+  return property[col.id] ?? "-";
+};
+
+const getCSVValue = (col, row, idx) => {
+  if (col.id === "sno") return idx + 1;
+  if (col.id === "sewerConnection" || col.id === "isDisabled")
+    return row[col.id] ? "Yes" : "No";
+  if (col.id === "frontView")
+    return row.frontView ? `${serverURL}/images/${row.frontView}` : "";
+  let val = row[col.id] ?? "";
+  if (
+    col.id === "zone" ||
+    col.id === "ward" ||
+    col.id === "mohalla" ||
+    col.id === "houseUsage" ||
+    col.id === "ownershipStatus" ||
+    col.id === "ownerName"
+  ) {
+    val = capitalizeWords(val);
+  }
+  val = String(val).replace(/"/g, '""');
+  return `"${val}"`;
+};
+
+
+// Export Function 
+function exportToCSV(rows, columns, filename = "property_details.csv") {
+  if (!rows || !rows.length) return;
+  const header = columns.map(col => `"${col.label}"`).join(",");
+  // Use getCSVValue for each cell
+  const csvRows = rows.map((row, idx) =>
+    columns.map(col => getCSVValue(col, row, idx)).join(",")
+  );
+  const csvString = [header, ...csvRows].join("\r\n");
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute("download", filename);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+}
+
+
+
+export default function PropertyDetailsTable({ data = [] }) {
+  return (
+    <Box mt={3}>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Property Details
+        </Typography>
+        <Button  onClick={() => exportToCSV(data, columns)} variant="outlined" size="small" startIcon={<DownloadIcon />}>
+          Export
+        </Button>
+      </Box>
+      <TableContainer
+        component={Paper}
+        sx={{
+          maxHeight: 520,
+          minWidth: 700,
+          width: "100%",
+          overflowX: "auto",
+        }}
+      >
+        <Table
+          stickyHeader
+          size="small"
+          sx={{
+            borderCollapse: "collapse",
+            "& th, & td": {
+              border: "1px solid #cfcfcf",
+              fontSize: 14,
+            },
+            "& th": {
+              backgroundColor: "primary.main",
+              color: "primary.contrastText",
+              fontWeight: 600,
+            }
+          }}
+        >
+          <TableHead>
+            <TableRow>
+              {columns.map((col) => (
+                <TableCell
+                  key={col.id}
+                  sx={{
+                    minWidth: col.minWidth,
+                    textAlign: col.align || "left",
+                  }}
+                >
+                  {col.label}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {!data || data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={columns.length} align="center">
+                  <Typography>No properties found.</Typography>
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.map((property, idx) => (
+                <TableRow
+                  key={property._id?.$oid || property._id || idx}
+                  hover
+                  style={getRowStyle(idx)}
+                >
+                  {columns.map((col) => (
+                    <TableCell
+                      key={col.id}
+                      sx={{
+                        textAlign: col.align || "left",
+                        maxWidth: 150,
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis"
+                      }}
+                    >
+                      {renderCell(property, col, idx)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
+  );
+}

@@ -1,0 +1,104 @@
+import React from "react";
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  TableSortLabel,
+  Typography,
+} from "@mui/material";
+
+// Optional: Zebra striping and sticky head styling
+const getRowStyle = (index) =>
+  index % 2 === 0
+    ? { backgroundColor: "#f9f9f9" }
+    : { backgroundColor: "#fff" };
+
+function formatZoneWardMohalla(item) {
+  return [item.zone, item.ward, item.mohalla].filter(Boolean).join(" | ");
+}
+
+export function PropertyResultsTable({ data, sortField, onSort, sortDir }) {
+  const columns = [
+    { id: "ownerName", label: "Owner" },
+    { id: "mobileNo", label: "Mobile" },
+    { id: "email", label: "Email" },
+    { id: "zoneWardMohalla", label: "Zone | Ward | Mohalla" },
+    { id: "houseUsage", label: "Usage" },
+    { id: "ownershipStatus", label: "Ownership" },
+    // { id: "constructionYear", label: "Year" },
+  ];
+
+  return (
+    <TableContainer component={Paper} sx={{ maxHeight: 380, mt: 2 }}>
+      <Table stickyHeader size="small" aria-label="property search results">
+        <TableHead>
+          <TableRow>
+            {columns.map((col) => (
+              <TableCell
+                key={col.id}
+                sortDirection={sortField === col.id ? sortDir : false}
+                sx={{
+                  fontWeight: 600,
+                  backgroundColor: "primary.main",
+                  color: "primary.contrastText",
+                  top: 0,
+                  zIndex: 1,
+                  minWidth:
+                    col.id === "zoneWardMohalla"
+                      ? 180
+                      : col.id === "email"
+                        ? 160
+                        : 80,
+                }}
+              >
+                {["ownerName", "mobileNo", "email", "constructionYear"].includes(col.id) ? (
+                  <TableSortLabel
+                    active={sortField === col.id}
+                    direction={sortField === col.id ? sortDir : "asc"}
+                    onClick={() => onSort(col.id)}
+                    sx={{ color: "inherit", "& .MuiTableSortLabel-icon": { color: "inherit !important" } }}
+                  >
+                    {col.label}
+                  </TableSortLabel>
+                ) : (
+                  col.label
+                )}
+              </TableCell>
+            ))}
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {data.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={columns.length} align="center">
+                <Typography>No properties found.</Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            data.map((item, idx) => (
+              <TableRow key={item._id?.$oid || item._id} hover style={getRowStyle(idx)}>
+                <TableCell>{item.ownerName}</TableCell>
+                <TableCell>{item.mobileNo}</TableCell>
+                <TableCell>{item.email}</TableCell>
+                <TableCell>
+                  {formatZoneWardMohalla(item)}
+                </TableCell>
+                <TableCell sx={{ textTransform: "capitalize" }}>
+                  {item.houseUsage}
+                </TableCell>
+                <TableCell>
+                  {item.ownershipStatus}
+                </TableCell>
+                {/* <TableCell>{item.constructionYear}</TableCell> */}
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+}
