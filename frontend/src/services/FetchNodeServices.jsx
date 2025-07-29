@@ -2,6 +2,8 @@ import axios from "axios";
 // import.meta.env;
 
 var serverURL=import.meta.env.VITE_BASE_URL;
+// const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 const getData = async(url) => {
     try {
